@@ -1,37 +1,51 @@
+#!/usr/bin/python2
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import serial
 
+
+device_port = serial.Serial("/dev/ttyUSB0" , 9600, timeout=5)
+fo = open("foo.txt", "w")
 
 def data_gen(t=0):
-    cnt = 0
-    while cnt < 1000:
-        cnt += 1
-        t += 0.1
-        yield t, np.sin(2*np.pi*t) * np.exp(-t/10.)
-
+    #t = 4000
+    while True:
+        #if t > 200: 
+	t +=1 
+	s1 = device_port.readline()
+        y1 = int(s1.split()[0])
+        y2 = int(s1.split()[1])
+	yield y1, y2
 
 def init():
-    ax.set_ylim(-1.1, 1.1)
-    ax.set_xlim(0, 10)
+
+    ax.set_ylim(0, 1023)
+    ax.set_xlim(0, 1024)
+    #ax.invert_xaxis()  
     del xdata[:]
     del ydata[:]
     line.set_data(xdata, ydata)
     return line,
 
 fig, ax = plt.subplots()
-line, = ax.plot([], [], lw=2)
+line, = ax.plot([], [], 'go')
 ax.grid()
 xdata, ydata = [], []
+
+print "T, 50ms \t briteness \n"
 
 
 def run(data):
     # update the data
     t, y = data
+    print t, y
     xdata.append(t)
     ydata.append(y)
+    #fo.write(t, y)
     xmin, xmax = ax.get_xlim()
-
+    #print xmin, xmax
     if t >= xmax:
         ax.set_xlim(xmin, 2*xmax)
         ax.figure.canvas.draw()
@@ -42,3 +56,6 @@ def run(data):
 ani = animation.FuncAnimation(fig, run, data_gen, blit=False, interval=10,
                               repeat=False, init_func=init)
 plt.show()
+
+fo.close()
+device_port.close()
