@@ -15,15 +15,15 @@ def data_gen(t=0):
         #if t > 200: 
 	t +=1 
 	s1 = device_port.readline()
-        y1 = int(s1.split()[0])
-        y2 = int(s1.split()[1])
+        y1 = float(s1.split()[0])
+        y2 = float(s1.split()[1])
 	yield y1, y2
 
 def init():
 
-    ax.set_ylim(0, 1023)
-    ax.set_xlim(0, 1024)
-    #ax.invert_xaxis()  
+    ax.set_ylim(4000, 200)
+    ax.set_xlim(0, 100)
+    ax.invert_xaxis()  
     del xdata[:]
     del ydata[:]
     line.set_data(xdata, ydata)
