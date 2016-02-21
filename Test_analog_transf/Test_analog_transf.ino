@@ -6,6 +6,16 @@ int wLen = 1;       // lengh of periodic peaks
 float wNum = 3800.0;
 float dt = 0.0;
 
+// Settings
+
+unsigned short scanTtime = 6;
+unsigned short multipler = 1;
+unsigned short chExp = 1;
+bool timeDrive = 0;
+bool index = 0;
+bool abs_ = 0;
+
+
 
 
 
@@ -22,9 +32,9 @@ void setup() {
 void loop() {
 
   if (Serial.available() > 0  ){
-    cmd = Serial.read();
+    //bool cmd = Serial.read();
   }
-  case 
+
   read_data();
   delay(T);
 
@@ -93,6 +103,62 @@ void read_data(){
 
 
 }
+
+bool getStatus(){
+
+
+}
+
+
+bool getSettings() {
+  int incomingByte = 0;
+  if (Serial.available() > 0) {
+
+    delay(10);
+
+    //for ( int i = 0; i < Serial.available(); i++ )  {   /// check this num
+
+    if(Serial.read()==0xAC) {
+
+      incomingByte = Serial.read();
+
+      switch (incomingByte) {
+
+
+
+      case 0x01:
+
+        measure=true;
+
+        channel=0;
+
+        break;
+        
+      case 0x02:
+
+        measure=true;
+
+        channel=0;
+
+        break;
+      }
+
+
+    }
+
+
+
+
+  }
+
+  return 0;
+}
+
+
+
+
+
+
 
 
 

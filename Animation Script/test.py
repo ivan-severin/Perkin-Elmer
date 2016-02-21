@@ -21,8 +21,8 @@ def data_gen(t=0):
 
 def init():
 
-    ax.set_ylim(4000, 200)
-    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 100)
+    ax.set_xlim(200, 4000)
     ax.invert_xaxis()  
     del xdata[:]
     del ydata[:]
