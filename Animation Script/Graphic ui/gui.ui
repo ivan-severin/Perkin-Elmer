@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>MplMainWindow</class>
+ <widget class="QMainWindow" name="MplMainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -20,7 +20,7 @@
       <x>450</x>
       <y>40</y>
       <width>91</width>
-      <height>145</height>
+      <height>149</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="ScanTimeLayout">
@@ -80,7 +80,7 @@
       <x>450</x>
       <y>190</y>
       <width>125</width>
-      <height>116</height>
+      <height>121</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="MultiplerLayout">
@@ -128,13 +128,13 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>560</x>
       <y>40</y>
       <width>124</width>
-      <height>144</height>
+      <height>151</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="ChartExpansionLoyaut">
@@ -175,13 +175,13 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>580</x>
       <y>200</y>
       <width>113</width>
-      <height>83</height>
+      <height>92</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="CheckStatusLayout">
@@ -208,13 +208,13 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>440</x>
       <y>330</y>
       <width>271</width>
-      <height>30</height>
+      <height>33</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="StatusLoyaut">
@@ -234,19 +234,17 @@
      </item>
     </layout>
    </widget>
-   <zorder>layoutWidget</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>TimeDrive</zorder>
-   <zorder>label_3</zorder>
-   <zorder>radioButton_4</zorder>
-   <zorder>radioButton_5</zorder>
-   <zorder>radioButton_6</zorder>
-   <zorder>radioButton_7</zorder>
-   <zorder>Index</zorder>
-   <zorder>label_4</zorder>
-   <zorder>label_5</zorder>
-   <zorder>label_5</zorder>
-   <zorder>label_4</zorder>
+   <widget class="QWidget" name="horizontalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>421</width>
+      <height>391</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="mpl"/>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
