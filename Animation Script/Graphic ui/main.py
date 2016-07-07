@@ -3,9 +3,12 @@
 
 
 if __name__ == "__main__":
-    import sys
+    #import sys
     #import gui.py
+
     from gui import *
+
+
     app = QtGui.QApplication(sys.argv)
     MplMainWindow = QtGui.QMainWindow()
     ui = Ui_MplMainWindow()

@@ -7,7 +7,8 @@ float wNum = 3800.0;
 float dt = 0.0;
 
 // Settings
-
+int measure;
+int channel;
 unsigned short scanTtime = 6;
 unsigned short multipler = 1;
 unsigned short chExp = 1;
@@ -24,22 +25,24 @@ void setup() {
   pinMode(wNum, INPUT);
   pinMode(scan, INPUT);
   Serial.println("Setup started");
-  wLen = timeStep();
+ // wLen = timeStep();
   //wLen = 1199;
   dt = 100.0 / float(wLen);
 }
-
+/////////////////////////////////////////////////////////////////////
 void loop() {
 
-  if (Serial.available() > 0  ){
+  //if (Serial.available() > 0  ){
     //bool cmd = Serial.read();
-  }
+  //}
 
-  read_data();
+  //read_data();
+  send_data();
+  dt+=1.0;
   delay(T);
 
 }
-
+////////////////////////////////////////////////////////////////////
 float timeStep() {
 
   unsigned long int t0 = 0;
@@ -85,7 +88,7 @@ float timeStep() {
   return float(wLen)/float(T);
 }
 
-
+///////////////////////////////////////////////////////////////////////
 void read_data(){
   if (digitalRead(scan) == LOW && wNum > 200 ) {
 
@@ -154,7 +157,14 @@ bool getSettings() {
   return 0;
 }
 
-
+void send_data(){
+  
+  Serial.print(dt);
+  Serial.print('\t');
+  Serial.println(float(analogRead(pen)) / 10.24);
+  
+  
+}
 
 
 

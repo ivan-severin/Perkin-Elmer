@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-
+import sys
 from PyQt4 import QtGui
 from matplotlib.backends.backend_qt4agg \
     import FigureCanvasQTAgg as FigureCanvas
@@ -23,3 +23,7 @@ class MplWidget(QtGui.QWidget):
         self.vbl = QtGui.QVBoxLayout()
         self.vbl.addWidget(self.canvas)
         self.setLoyout(self.vbl)
+
+app = QtGui.QApplication(sys.argv)
+window = MplWidget()
+sys.exit(app.exec_())
