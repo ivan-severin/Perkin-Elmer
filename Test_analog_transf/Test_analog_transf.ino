@@ -1,23 +1,26 @@
 const int WNM = 2;  // pin of wavenumver
 const int scan = 3; // pin of pauses in mesuring
 const int pen = A0; // pin of analog intensyvity
+
 const int T = 50; // period of reading data
-int wLen = 1;       // lengh of periodic peaks
-float wNum = 3800.0;
 float dt = 0.0;
+
+int wLen = 1;  // lengh of periodic peaks
+float wNum = 4000.0;
+
 
 ////////////////////////////  Settings //////////////////////////////////////////////
 int measure;
 int channel;
+
 unsigned short scanTtime = 6;
 unsigned short multipler = 1;
 unsigned short chExp = 1;
+
+
 bool timeDrive = 0;
 bool index = 0;
 bool abs_ = 0;
-
-
-
 
 //////////////////////////// Setup //////////////////////////////////////////////////
 void setup() {
@@ -42,7 +45,7 @@ void loop() {
   delay(T);
 
 }
-//////////////////////////////////////////////////////////////////////
+////////////////////////// Read data ////////////////////////////////////////////
 void read_data() {
   if (digitalRead(scan) == LOW  ) {
 
@@ -56,12 +59,22 @@ void read_data() {
   }
 }
 
+
+////////////////////////// Send data ////////////////////////////////////////////
+void send_data() {
+
+}
+
+
+
+
+////////////////////////// Get Status ////////////////////////////////////////////
 bool getStatus() {
 
 
 }
 
-
+////////////////////////// Get Settings //////////////////////////////////////////
 bool getSettings() {
   int incomingByte = 0;
   if (Serial.available() > 0) {
@@ -74,47 +87,43 @@ bool getSettings() {
 
       incomingByte = Serial.read();
 
-      switch (incomingByte) {
-        case 0x01:
-          measure = true;
-          channel = 0;
-          break;
-
-        case 0x02:
-          measure = true;
-          channel = 0;
-          break;
-      }
+//      switch (incomingByte) {
+//        case 0x01:
+//          measure = true;
+//          channel = 0;
+//          break;
+//
+//        case 0x02:
+//          measure = true;
+//          channel = 0;
+//          break;
+//      }
     }
   }
 
   return 0;
 }
 
-void send_data() {
 
-  Serial.print(dt);
-  Serial.print('\t');
-  Serial.println(float(analogRead(pen)) / 10.23);
-
-
-}
-
-
+//////////////////// Get time of Wave number step motor [Use it for debug] //////////////////////////
 float timeStep() {
 
-  unsigned long int t0 = 0;
-  unsigned long int t1 = 0;
-  unsigned long int t2 = 0;
+  unsigned long int t0 = 0; //time of starting measure [High -> Low]
+  unsigned long int t1 = 0; //time of begin impulse [Low -> High]
+  unsigned long int t2 = 0; // time of width peak during [High]
+
   bool xOld = HIGH;
   bool x = HIGH;            // get signal (periodic low)
-  bool k = 0;               // defines start and end of measuring time step
-  while (1) {
+  bool k = 0;  // defines start and end of measuring time step
+    
+  while (true) {
     x = digitalRead(WNM);
+    
     if (x == LOW)                //
       Serial.println("low");
     else
       Serial.println("high");
+    
     if (x == LOW && xOld == HIGH && k == 0) {
       t0 = millis();
       Serial.print("t0 =  ");

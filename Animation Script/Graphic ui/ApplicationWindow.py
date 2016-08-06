@@ -1,32 +1,36 @@
 #!/usr/bin/env python
-# @name = ...
-import sys
+"""
+progname is simple program collecting and performing
+data from spectrometer Perkin Elmer 599b.
+
+Used modules: PyQt4,  pyqtgraph, os, sys, Data (Serial)
+"""
+
 import os
-import numpy as np
 from PyQt4 import QtGui, QtCore
 import pyqtgraph as pg
+from Data import *
 
 progname = os.path.basename(sys.argv[0])
-
 progversion = "0.1"
-
-# from MyMplCanvas import *
-
-from Data import *
 
 
 class ApplicationWindow(QtGui.QMainWindow):
+    """
+
+    """
+
     def __init__(self):
+        """
+
+        """
         QtGui.QMainWindow.__init__(self)
-
         # self.setGeometry(50, 50, 500, 300)
-
-
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setWindowTitle("application main window")
 
         self.file_menu = QtGui.QMenu('&File', self)
-        self.file_menu.addAction('&Quit', self.fileQuit, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
+        self.file_menu.addAction('&Quit', self.file_quit, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
         self.menuBar().addMenu(self.file_menu)
 
         self.help_menu = QtGui.QMenu('&Help', self)
@@ -78,15 +82,15 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.plot = pg.PlotWidget()
         self.curve = self.plot.plot()
         self.curve1 = self.plot.plot()
-        self.setconf()
+        self.set_plot_conf()
 
         layout.addWidget(self.btn, 10, 0, 1, 2)
-        self.btn.clicked.connect(self.sendSettings)
+        self.btn.clicked.connect(self.collect_settings)
 
         layout.addWidget(self.plot, 0, 4, 11, 1)  # plot goes on right side, spanning 3 rows
 
         timer = QtCore.QTimer(self)
-        timer.timeout.connect(self.updateplot)
+        timer.timeout.connect(self.update_plot)
         timer.start(5)
 
         self.main_widget.setFocus()
@@ -94,8 +98,14 @@ class ApplicationWindow(QtGui.QMainWindow):
 
         self.statusBar().showMessage("All hail !", 2000)
 
-    def sendSettings(self):
-        s = '9'
+    def collect_settings(self):
+        """
+        Collect all settings which present in MainWindow
+        Begins and ends '-'.
+
+        :return: string
+        """
+        s = '-'
         for item in self.scan_time, self.chart_expansion, self.multipler_noize:
             s += self.get_checked_items(item)
         for item in self.checkbox:
@@ -103,17 +113,27 @@ class ApplicationWindow(QtGui.QMainWindow):
                 s += '1'
             else:
                 s += '0'
-        print(s)
-        print (len(s))
+        s += '-'
+        print('Settings collected:' + s)
+        return s
 
-    def setconf(self):
-        # type: () -> None
+    def set_plot_conf(self):
+        """
+        Sets some pyQtGraph settings such as WindowTitle,
+        OX and OY labels, measuring units.
+        """
         self.plot.setWindowTitle('pyqtgraph example: PlotSpeedTest')
         self.plot.setLabel('bottom', 'WaveNumber', units='1/cm')
         self.plot.setLabel('left', 'Intencivity')
         self.plot.showGrid(x=True, y=True)
 
-    def updateplot(self):
+    def update_plot(self):
+        """
+        Set new data for pyQtGraph: curve and curve1 (in case three rows of data),
+        for every new frame.
+
+        :return: self
+        """
         # print type(self.data.getData())
         try:
             t, x, y = self.data.getData()
@@ -124,7 +144,7 @@ class ApplicationWindow(QtGui.QMainWindow):
             self.curve.setData(x=x, y=y, pen='g')
 
     @staticmethod
-    def getCheckedItems(radio_buttons=None):
+    def get_checked_items(radio_buttons=None):
         if radio_buttons is None:
             radio_buttons = [QtGui.QRadioButton]
         s = ''
@@ -134,16 +154,16 @@ class ApplicationWindow(QtGui.QMainWindow):
                 # print (s)
         return s
 
-    def fileQuit(self):
+    def file_quit(self):
         self.close()
 
     def closeEvent(self):
-        self.fileQuit()
+        self.file_quit()
 
     def about(self):
-        QtGui.QMessageBox.about(self, "About", """_____.py
+        QtGui.QMessageBox.about(self, "About",
+                                """_____.py
 Copyright 2016 Florent Rougon, 2006 Darren Dale
-
 
 It may be used and modified with no restriction; raw copies as well as
 modified versions may be distributed without limitation.""")
