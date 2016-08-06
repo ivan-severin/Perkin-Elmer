@@ -2,7 +2,7 @@
 
 
 
-from __future__ import unicode_literals
+# from __future__ import unicode_literals
 import sys
 import os
 import numpy as np
@@ -84,21 +84,21 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.setconf()
 
         layout.addWidget(self.btn, 10, 0, 1, 2)
-        self.btn.clicked.connect(self.send_settings)
+        self.btn.clicked.connect(self.sendSettings)
 
         layout.addWidget(self.plot, 0, 4, 11, 1)  # plot goes on right side, spanning 3 rows
 
         timer = QtCore.QTimer(self)
         timer.timeout.connect(self.updateplot)
-        timer.start(5000)
+        timer.start(5)
 
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
 
         self.statusBar().showMessage("All hail !", 2000)
 
-    def send_settings(self):
-        s = ''
+    def sendSettings(self):
+        s = '9'
         for item in self.scan_time, self.chart_expansion, self.multipler_noize:
             s += self.get_checked_items(item)
         for item in self.checkbox:
@@ -107,6 +107,7 @@ class ApplicationWindow(QtGui.QMainWindow):
             else:
                 s += '0'
         print(s)
+        print (len(s))
 
     def setconf(self):
         # type: () -> None
@@ -126,12 +127,12 @@ class ApplicationWindow(QtGui.QMainWindow):
             self.curve.setData(x=x, y=y, pen='g')
 
     @staticmethod
-    def get_checked_items(radio_bottons=None):
-        if radio_bottons is None:
-            radio_bottons = [QtGui.QRadioButton]
+    def getCheckedItems(radio_buttons=None):
+        if radio_buttons is None:
+            radio_buttons = [QtGui.QRadioButton]
         s = ''
-        for i in range(1, len(radio_bottons)):
-            if radio_bottons[i].isChecked():
+        for i in range(1, len(radio_buttons)):
+            if radio_buttons[i].isChecked():
                 s += str(i)
                 # print (s)
         return s

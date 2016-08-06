@@ -3,10 +3,14 @@ from __future__ import print_function
 import sys
 import glob
 import serial
-import numpy as np
+# import numpy as np
 
 
 def serial_ports():
+    """
+    Finds all serial ports (cross platform)
+    :return: array of ports
+    """
     if sys.platform.startswith('win'):
         ports = ['COM%s' % (i + 1) for i in range(256)]
     elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
@@ -28,7 +32,11 @@ def serial_ports():
 
 
 class Data(object):
-    """docstring for  Data"""
+    """
+    It provides collecting and performing all data, which comes from Serial port
+
+
+    """
 
     def __init__(self):
         # super( Data, self).__init__()
@@ -47,41 +55,31 @@ class Data(object):
         self.t_data = []
         # data = x_data, y_data
 
-    def getData(self):
-        # type: () -> float, float, float
-        # self.device_port.write('r')
+    def getData(self, n = 100 ):
+        """
+        type: () -> float, float, float
+        # Function reads n lines from serial port,
+        # append to array (x_data[], y_data[]) return array
+        # of pairs which was rad
 
-
-        # try:
+        """
 
         try:
+
+            #self.device_port.write('r')
+            # for i in range(n):
+
             line = self.device_port.readline()
             data = [float(val) for val in line.split()]
 
             if len(data) == 2:
                 self.x_data.append(data[0])
                 self.y_data.append(data[1])
-                return (self.x_data, self.y_data)
-
-            elif len(data) == 3:
-                self.t_data.append(data[0])
-                self.x_data.append(data[1])
-                self.y_data.append(data[2])
-                print(data)
-                return (self.t_data, self.x_data, self.y_data)
-            if len(self.x_data) > 1600:
-                self.t_data = []
-                self.y_data = []
-                self.x_data = []
-                # print(data)
-        except:
+        except (OSError, serial.SerialException, AttributeError):
             print('No Arduio')
-
-        # print self.x_data,self.y_data
-        # print x + '\t'+ y
         return self.x_data, self.y_data
 
-    def send_setting(self):
+    def sendSetting(self):
         pass
 
 
