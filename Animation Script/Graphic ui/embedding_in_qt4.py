@@ -140,7 +140,7 @@ class ApplicationWindow(QtGui.QMainWindow):
     def fileQuit(self):
         self.close()
 
-    def closeEvent(self, ce):
+    def closeEvent(self):
         self.fileQuit()
 
     def about(self):
