@@ -1,7 +1,9 @@
 import sys
 import glob
 import serial
-# import numpy as np
+import numpy as np
+
+from  PyQt4 import QtCore
 
 
 def serial_ports():
@@ -29,23 +31,23 @@ def serial_ports():
     return result
 
 
-class Data(object):
+class Data(QtCore.QThread):
     """
     It provides collecting and performing all data, which comes from Serial port
 
 
     """
 
-    def __init__(self):
+    def __init__(self, port_adr = '/dev/ttyUSB0', port_baud=34800):
+        QtCore.QThread.__init__(self)
         # super( Data, self).__init__()
-        import serial
-        if (serial_ports() != []):
-            # rewrite later !!!!
-            for port in serial_ports():
-                self.device_port = serial.Serial(port, 9600)
+        self.port = port_adr
+        self.baud = port_baud
+
+        self.device = serial.Serial(self.port, self.baud)
 
 
-                #  print 'Cant find Arduio'
+        #  print 'Cant find Arduio'
         self.data_store = None
 
         self.x_data = []
@@ -53,7 +55,12 @@ class Data(object):
         self.t_data = []
         # data = x_data, y_data
 
-    def getData(self, n = 100 ):
+    def run(self):
+        for i in range(10):
+            self.sleep(1)
+            self.emit(QtCore.SIGNAL('run_signal(float, float)'), i, i**3)
+
+    def get_data(self, n=100):
         """
         type: () -> float, float, float
         # Function reads n lines from serial port,
@@ -64,10 +71,10 @@ class Data(object):
 
         try:
 
-            #self.device_port.write('r')
+            # self.device.write('r')
             # for i in range(n):
 
-            line = self.device_port.readline()
+            line = self.device.readline()
             data = [float(val) for val in line.split()]
 
             if len(data) == 2:
@@ -77,7 +84,6 @@ class Data(object):
             print('No Arduio')
         return self.x_data, self.y_data
 
-    def sendSetting(self):
+    def send_setting(self):
+
         pass
-
-
