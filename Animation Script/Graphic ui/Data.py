@@ -1,9 +1,64 @@
 import sys
 import glob
 import serial
-import numpy as np
+from PyQt4 import QtCore
 
-from  PyQt4 import QtCore
+
+class Data(QtCore.QThread):
+    """
+    It provides collecting and performing all data, which comes from Serial port
+    """
+
+    def __init__(self, port_adr='/dev/ttyUSB0', port_baud=34800):
+        QtCore.QThread.__init__(self)
+        # super( Data, self).__init__()
+        self.port = port_adr
+        self.baud = port_baud
+
+        self.device = serial.Serial(self.port, self.baud)
+
+        #  print 'Cant find Arduio'
+        self.data_store = None
+
+        self.x_data = []
+        self.y_data = []
+        self.t_data = []
+        # data = x_data, y_data
+
+    def run(self):
+        while True:
+            x, y = self.get_data()
+            self.x_data.append(x)
+            self.y_data.append(y)
+
+            self.emit(QtCore.SIGNAL('run_signal(float, float)'), x, y)
+
+    def get_data(self):
+        """
+        type: () -> float, float, float
+        or
+        type: () -> float, float
+        # Function reads n lines from serial port,
+        # append to array (x_data[], y_data[]) return array
+        # of pairs which was rad
+
+        """
+        data = []
+        try:
+
+            # self.device.write('r')
+            # for i in range(n):
+
+            line = self.device.readline()
+            data = [float(val) for val in line.split()]
+
+        except (OSError, serial.SerialException, AttributeError):
+            print('No Arduio')
+        return data
+
+    def send_setting(self):
+
+        pass
 
 
 def serial_ports():
@@ -29,61 +84,3 @@ def serial_ports():
         except (OSError, serial.SerialException):
             pass
     return result
-
-
-class Data(QtCore.QThread):
-    """
-    It provides collecting and performing all data, which comes from Serial port
-
-
-    """
-
-    def __init__(self, port_adr = '/dev/ttyUSB0', port_baud=34800):
-        QtCore.QThread.__init__(self)
-        # super( Data, self).__init__()
-        self.port = port_adr
-        self.baud = port_baud
-
-        self.device = serial.Serial(self.port, self.baud)
-
-
-        #  print 'Cant find Arduio'
-        self.data_store = None
-
-        self.x_data = []
-        self.y_data = []
-        self.t_data = []
-        # data = x_data, y_data
-
-    def run(self):
-        for i in range(10):
-            self.sleep(1)
-            self.emit(QtCore.SIGNAL('run_signal(float, float)'), i, i**3)
-
-    def get_data(self, n=100):
-        """
-        type: () -> float, float, float
-        # Function reads n lines from serial port,
-        # append to array (x_data[], y_data[]) return array
-        # of pairs which was rad
-
-        """
-
-        try:
-
-            # self.device.write('r')
-            # for i in range(n):
-
-            line = self.device.readline()
-            data = [float(val) for val in line.split()]
-
-            if len(data) == 2:
-                self.x_data.append(data[0])
-                self.y_data.append(data[1])
-        except (OSError, serial.SerialException, AttributeError):
-            print('No Arduio')
-        return self.x_data, self.y_data
-
-    def send_setting(self):
-
-        pass
