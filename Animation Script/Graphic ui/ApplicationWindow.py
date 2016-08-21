@@ -107,7 +107,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.__data.x_data = []
         self.__data.y_data = []
         # self.__curve.setData([], [])
-        self.__btn_clear.setDisabled(True)
+        # self.__btn_clear.setDisabled(True)
 
     # def collect_settings(self):
     #     """
@@ -137,7 +137,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.__plot.setLabel('bottom', 'WaveNumber', units='1/cm')
         self.__plot.setLabel('left', 'Transmittance')
         self.__plot.showGrid(x=True, y=True)
-        # self.__plot.invertX()
+        self.__plot.invertX()
 
     def update_plot(self):
         """
