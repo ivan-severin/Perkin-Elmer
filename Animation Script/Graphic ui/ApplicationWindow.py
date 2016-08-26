@@ -59,7 +59,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.__dev = SerialComm()
         self.__data = Data()
 
-        # Add some objects on Grid Layout (x posittion, y position, eat x rows, eat y columbs )
+        # Add some objects on Grid Layout (x position, y position, eat x rows, eat y columns )
         __layout.addWidget(self.__btn_start, 9, 0, 1, 2)
         __layout.addWidget(self.__btn_clear, 10, 0, 1, 2)
         __layout.addWidget(self.__plot, 0, 4, 11, 1)  # __plot goes on right side, spanning 11 rows
