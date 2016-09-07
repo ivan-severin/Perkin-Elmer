@@ -47,7 +47,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         # Add buttons
         self.__btn_start = QtGui.QPushButton('Start')
         self.__btn_clear = QtGui.QPushButton('Clear')
-        self.__btn_clear.setDisabled(True)
+        # self.__btn_clear.setDisabled(True)
 
         # Create & Define plot from PyQtgraph
         self.__plot = pg.PlotWidget()
@@ -96,7 +96,6 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.statusBar().showMessage("Connected and Started!", 2000)
 
     def on_finished(self):
-        self.__btn_start.setDisabled(False)
         self.statusBar().showMessage("Finished!", 2000)
 
     def clear_screen(self):
