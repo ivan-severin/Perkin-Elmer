@@ -40,8 +40,8 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.menuBar().addMenu(self.__help_menu)
         # self.__help_menu.addAction('&About', self.about)
 
+        # Define main layout
         self.main_widget = QtGui.QWidget(self)
-
         __layout = QtGui.QGridLayout(self.main_widget)
 
         # Add buttons
@@ -59,7 +59,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.__dev = SerialComm()
         self.__data = Data()
 
-        # Add some objects on Grid Layout (x posittion, y position, eat x rows, eat y columbs )
+        # Add some objects on Grid Layout (x position, y position, eat x rows, eat y columns )
         __layout.addWidget(self.__btn_start, 9, 0, 1, 2)
         __layout.addWidget(self.__btn_clear, 10, 0, 1, 2)
         __layout.addWidget(self.__plot, 0, 4, 11, 1)  # __plot goes on right side, spanning 11 rows
@@ -74,59 +74,36 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.connect(self.__dev, QtCore.SIGNAL('started()'), self.on_started)
         self.connect(self.__dev, QtCore.SIGNAL('finished()'), self.on_finished)
 
-        # timer = QtCore.QTimer(self)
-        # timer.timeout.connect(self.update_plot, QtCore.Qt.QueuedConnection)
-        # timer.start(5)
-
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
-
-        # self.statusBar().showMessage("All hail !", 2000)
 
     def on_change(self, a, b):
         self.__data.x_data.append(a)
         self.__data.y_data.append(b)
-        self.__curve.setData(self.__data.x_data, self.__data.y_data)
-        print(a, b)
+        self.__curve.setData(self.__data.x_data, self.__data.y_data, _callSync='off')
 
     def on_clicked(self):
-        self.__btn_start.setDisabled(True)
-        if not (self.__data.y_data or self.__data.x_data):
-            self.__btn_clear.setDisabled(False)
-        self.__dev.connect()
-        self.__dev.start()
+        # self.__btn_start.setDisabled(True)
+        if not self.__dev.is_connected:
+            self.__btn_start.setText("Stop")
+            self.__dev.connect()
+            self.__dev.start()
+        else:
+            self.__btn_start.setText("Start")
+            self.__dev.disconnect()
 
     def on_started(self):
-        self.statusBar().showMessage("On started Was Called!", 2000)
+        self.statusBar().showMessage("Connected and Started!", 2000)
 
     def on_finished(self):
         self.__btn_start.setDisabled(False)
-        self.statusBar().showMessage("data Finished!", 2000)
+        self.statusBar().showMessage("Finished!", 2000)
 
     def clear_screen(self):
         self.__data.x_data = []
         self.__data.y_data = []
         # self.__curve.setData([], [])
         # self.__btn_clear.setDisabled(True)
-
-    # def collect_settings(self):
-    #     """
-    #     Collect all settings which present in MainWindow
-    #     Begins and ends '-'.
-    #
-    #     :return: string
-    #     """
-    #     s = '-'
-    #     for item in self.scan_time, self.chart_expansion, self.multipler_noize:
-    #         s += self.get_checked_items(item)
-    #     for item in self.checkbox:
-    #         if item.checkState():
-    #             s += '1'
-    #         else:
-    #             s += '0'
-    #     s += '-'
-    #     print('Settings collected:' + s)
-    #     return s
 
     def set_plot_conf(self):
         """
@@ -155,29 +132,15 @@ class ApplicationWindow(QtGui.QMainWindow):
             x, y = self.__dev.get_data()
             self.__curve.setData(x=x, y=y, pen='g')
 
-    # @staticmethod
-    # def get_checked_items(radio_buttons=None):
-    #     """
-    #     :param radio_buttons: array of radio button group (begins from 1 to
-    #     Length(radio button array).
-    #     From which we read pushed radio buttons
-    #     :return: string with numbers of pushed buttons
-    #     """
-    #     if radio_buttons is None:
-    #         radio_buttons = [QtGui.QRadioButton]
-    #     s = ''
-    #     for i in range(1, len(radio_buttons)):
-    #         if radio_buttons[i].isChecked():
-    #             s += str(i)
-    #             # print (s)
-    #     return s
-
     def file_quit(self):
-        self.close()
+
+        if self.__dev.isRunning():
+            self.__dev.disconnect()
 
     def closeEvent(self, event):
         self.file_quit()
-
+        self.hide()
+        event.accept()
         # def about(self):
         #     QtGui.QMessageBox.about(self,
         #                             'About',

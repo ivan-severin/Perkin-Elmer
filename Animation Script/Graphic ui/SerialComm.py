@@ -59,11 +59,12 @@ class SerialComm(QtCore.QThread):
         """
 
 
-        :return:
-        """
-        if self.__conn_state == 1:
-            self.ser.close()
 
+        """
+        if self.__conn_state:
+            self.__conn_state = False
+        self.ser.close()
+        print("Successfully disconnected to port %r." % self.port)
     @property
     def is_connected(self):
         """
