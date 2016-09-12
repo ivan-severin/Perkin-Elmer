@@ -45,27 +45,41 @@ class ApplicationWindow(QtGui.QMainWindow):
         __layout = QtGui.QGridLayout(self.main_widget)
 
         # Add buttons
-        self.__btn_start = QtGui.QPushButton('Start')
+        self.__btn_start_stop = QtGui.QPushButton('Start')
         self.__btn_clear = QtGui.QPushButton('Clear')
         # self.__btn_clear.setDisabled(True)
 
         # Create & Define plot from PyQtgraph
-        self.__plot = pg.PlotWidget()
-        self.__curve = self.__plot.plot()
-        self.__curve1 = self.__plot.plot()
-        self.set_plot_conf()
+        self.__main_plot = pg.PlotWidget(title="Main plow Window")
+        self.__rs_plot = pg.PlotWidget(title="Region Selection Window")
+        self.__main_plot.plotItem.addItem(self.__rs_plot.plotItem)
+        self.__curve = self.__main_plot.plot()
+        self.__curve1 = self.__main_plot.plot()
 
+        # Add long plot of region selection
+        self.lr = pg.LinearRegionItem([0, 200])
+        self.lr.setZValue(-10)
+        # self.__rs_plot.addItem(self.lr)
+        self.set_plot_conf(self.__main_plot)
+        self.set_plot_conf(self.__rs_plot)
+
+        self.lr.sigRegionChanged.connect(lambda:
+                                         self.__main_plot.setXRange(padding=0,
+                                                                    *self.lr.getRegion()))
+        self.__rs_plot.sigXRangeChanged.connect(
+            lambda: self.lr.setRegion(self.__main_plot.plotItem.getViewBox().viewRange()[0]))
         # Create instance of some data, which we should plot
         self.__dev = SerialComm()
         self.__data = Data()
 
         # Add some objects on Grid Layout (x position, y position, eat x rows, eat y columns )
-        __layout.addWidget(self.__btn_start, 9, 0, 1, 2)
+        __layout.addWidget(self.__btn_start_stop, 9, 0, 1, 2)
         __layout.addWidget(self.__btn_clear, 10, 0, 1, 2)
-        __layout.addWidget(self.__plot, 0, 4, 11, 1)  # __plot goes on right side, spanning 11 rows
+        __layout.addWidget(self.__main_plot, 1, 4, 11, 1)  # __plot goes on right side, spanning 11 rows
+        # __layout.addWidget(self.__rs_plot, 12, 4)  # __plot goes on right side, spanning 11 rows
 
         # Define signal&slots for buttons and Data instance
-        self.connect(self.__btn_start, QtCore.SIGNAL('clicked()'), self.on_clicked)
+        self.connect(self.__btn_start_stop, QtCore.SIGNAL('clicked()'), self.on_clicked)
         self.connect(self.__btn_clear, QtCore.SIGNAL('clicked()'), self.clear_screen)
 
         self.connect(self.__dev,
@@ -85,11 +99,11 @@ class ApplicationWindow(QtGui.QMainWindow):
     def on_clicked(self):
         # self.__btn_start.setDisabled(True)
         if not self.__dev.is_connected:
-            self.__btn_start.setText("Stop")
+            self.__btn_start_stop.setText("Stop")
             self.__dev.connect()
             self.__dev.start()
         else:
-            self.__btn_start.setText("Start")
+            self.__btn_start_stop.setText("Start")
             self.__dev.disconnect()
 
     def on_started(self):
@@ -104,16 +118,22 @@ class ApplicationWindow(QtGui.QMainWindow):
         # self.__curve.setData([], [])
         # self.__btn_clear.setDisabled(True)
 
-    def set_plot_conf(self):
+    @staticmethod
+    def set_plot_conf(obj):
         """
         Sets some pyQtGraph settings such as WindowTitle,
         OX and OY labels, measuring units.
+        :type obj: pyqtpraph Widqget
         """
         # self.__plot.setWindowTitle('pyqtgraph example: __plotSpeedTest')
-        self.__plot.setLabel('bottom', 'WaveNumber', units='1/cm')
-        self.__plot.setLabel('left', 'Transmittance')
-        self.__plot.showGrid(x=True, y=True)
-        self.__plot.invertX()
+        try:
+            obj.setLabel('bottom', 'WaveNumber', units='1/cm')
+            obj.setLabel('left', 'Transmittance')
+            obj.showGrid(x=True, y=True)
+            obj.invertX()
+        except AttributeError:
+            print(AttributeError)
+            pass
 
     def update_plot(self):
         """
