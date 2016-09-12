@@ -10,6 +10,7 @@ Used modules: PyQt4,  pyqtgraph, os, sys, __data (Serial)
 
 from PyQt4 import QtGui
 import pyqtgraph as pg
+
 from Data import *
 from SerialComm import *
 
@@ -52,49 +53,92 @@ class ApplicationWindow(QtGui.QMainWindow):
         # Create & Define plot from PyQtgraph
         self.__main_plot = pg.PlotWidget(title="Main plow Window")
         self.__rs_plot = pg.PlotWidget(title="Region Selection Window")
-        self.__main_plot.plotItem.addItem(self.__rs_plot.plotItem)
-        self.__curve = self.__main_plot.plot()
-        self.__curve1 = self.__main_plot.plot()
+        self.curve = self.__main_plot.plot()
+        self.curve1 = self.__rs_plot.plot()
+
+        # Set X Range for long plot
+        self.__rs_plot.setXRange(0.0, 4000)
 
         # Add long plot of region selection
         self.lr = pg.LinearRegionItem([0, 200])
-        self.lr.setZValue(-10)
-        # self.__rs_plot.addItem(self.lr)
+        self.lr.setZValue(10)
+        self.__rs_plot.addItem(self.lr)
+
+        # Set config for each Plot Widget
         self.set_plot_conf(self.__main_plot)
         self.set_plot_conf(self.__rs_plot)
 
-        self.lr.sigRegionChanged.connect(lambda:
-                                         self.__main_plot.setXRange(padding=0,
-                                                                    *self.lr.getRegion()))
-        self.__rs_plot.sigXRangeChanged.connect(
-            lambda: self.lr.setRegion(self.__main_plot.plotItem.getViewBox().viewRange()[0]))
+        # Defining cross hair
+        self.v_line = pg.InfiniteLine(angle=90, movable=False)
+        self.h_line = pg.InfiniteLine(angle=0, movable=False)
+
+        # Defining the label for numeric value of every dot in spectrum
+        self.xy_label = pg.LabelItem(justify='right', text='')
+
+        # Adding Two lines and label to plot
+        self.__main_plot.addItem(self.v_line)
+        self.__main_plot.addItem(self.h_line)
+        self.__main_plot.addItem(self.xy_label)
+
+        # Defining ViewBox func (for short writing)
+        self.vb = self.__main_plot.plotItem.vb
+
         # Create instance of some data, which we should plot
         self.__dev = SerialComm()
         self.__data = Data()
 
+        self.timer = QtCore.QTimer()
+
         # Add some objects on Grid Layout (x position, y position, eat x rows, eat y columns )
-        __layout.addWidget(self.__btn_start_stop, 9, 0, 1, 2)
-        __layout.addWidget(self.__btn_clear, 10, 0, 1, 2)
-        __layout.addWidget(self.__main_plot, 1, 4, 11, 1)  # __plot goes on right side, spanning 11 rows
-        # __layout.addWidget(self.__rs_plot, 12, 4)  # __plot goes on right side, spanning 11 rows
+        __layout.addWidget(self.__btn_start_stop, 2, 0, 1, 2)
+        __layout.addWidget(self.__btn_clear, 1, 0, 1, 2)
+        __layout.addWidget(self.__main_plot, 1, 4, )  # __plot goes on right side, spanning 11 rows
+        __layout.addWidget(self.__rs_plot, 2, 4)  # __plot goes on right side, spanning 11 rows
 
         # Define signal&slots for buttons and Data instance
         self.connect(self.__btn_start_stop, QtCore.SIGNAL('clicked()'), self.on_clicked)
         self.connect(self.__btn_clear, QtCore.SIGNAL('clicked()'), self.clear_screen)
 
-        self.connect(self.__dev,
-                     QtCore.SIGNAL('run_signal(float, float)'),
-                     self.on_change, QtCore.Qt.QueuedConnection)
         self.connect(self.__dev, QtCore.SIGNAL('started()'), self.on_started)
         self.connect(self.__dev, QtCore.SIGNAL('finished()'), self.on_finished)
 
+        # Signal& slot connection for Thread which reads data from Serial port
+        self.connect(self.__dev,
+                     QtCore.SIGNAL('run_signal(float,float)'),
+                     self.on_change, QtCore.Qt.QueuedConnection)
+
+        # Signal& slot connection
+        self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.re_plot)
+
+        # proxy = pg.SignalProxy(self.__main_plot.scene().sigMouseMoved, rateLimit=60, slot=self.mouse_moved)
+
+        # Making signals for resizing __main_plot when region changed
+        self.lr.sigRegionChanged.connect(
+            lambda: self.__main_plot.setXRange(padding=0, *self.lr.getRegion()))
+
+        self.__rs_plot.sigXRangeChanged.connect(
+            lambda: self.lr.setRegion(self.__main_plot.plotItem.getViewBox().viewRange()[0]))
+
+        self.__main_plot.scene().sigMouseMoved.connect(self.mouse_moved)
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
+
+    def mouse_moved(self, evt):
+        if self.__main_plot.plotItem.sceneBoundingRect().contains(evt):
+            mouse_point = self.vb.mapSceneToView(evt)
+            index = int(mouse_point.x())
+            if 0 < index < len(self.__data.x_data):
+                self.xy_label.setText(
+                    "<span style='font-size: 12pt'>x=%0.1f</span>,   "
+                    "<span style='color: red'>y1=%0.1f</span>"
+                    % (mouse_point.x(), self.__data.y_data[index]))
+                self.v_line.setPos(mouse_point.x())
+                self.h_line.setPos(self.__data.y_data[index])
 
     def on_change(self, a, b):
         self.__data.x_data.append(a)
         self.__data.y_data.append(b)
-        self.__curve.setData(self.__data.x_data, self.__data.y_data, _callSync='off')
+        # self.__curve.setData(self.__data.x_data, self.__data.y_data, _callSync='off')
 
     def on_clicked(self):
         # self.__btn_start.setDisabled(True)
@@ -105,18 +149,21 @@ class ApplicationWindow(QtGui.QMainWindow):
         else:
             self.__btn_start_stop.setText("Start")
             self.__dev.disconnect()
+            self.timer.stop()
 
     def on_started(self):
         self.statusBar().showMessage("Connected and Started!", 2000)
 
+        self.timer.start(1000)
+        print ("Timer started")
+
     def on_finished(self):
         self.statusBar().showMessage("Finished!", 2000)
+        self.timer.stop()
 
     def clear_screen(self):
         self.__data.x_data = []
         self.__data.y_data = []
-        # self.__curve.setData([], [])
-        # self.__btn_clear.setDisabled(True)
 
     @staticmethod
     def set_plot_conf(obj):
@@ -135,21 +182,29 @@ class ApplicationWindow(QtGui.QMainWindow):
             print(AttributeError)
             pass
 
-    def update_plot(self):
-        """
-        Set new __data for pyQtGraph: __curve and __curve1 (in case three rows of __data),
-        for every frame of new frame.
-        :return: self
-        """
-        # print type(self.__data.get_data())
-        try:
-            t, x, y = self.__dev.get_data()
-            self.__curve.setData(x=t, y=x, pen='r', symbol='o', symbolPen='r')
-            # assert isinstance(self.__curve1.setData, object)
-            self.__curve1.setData(x=t, y=y, pen='g', symbol='s', symbolPen='g')
-        except ValueError:
-            x, y = self.__dev.get_data()
-            self.__curve.setData(x=x, y=y, pen='g')
+    def re_plot(self):
+        print('tick')
+        self.curve.setData(self.__data.x_data, self.__data.y_data)
+        self.curve1.setData(self.__data.x_data, self.__data.y_data)
+        # self.__main_plot.plotItem.setData(x=self.__data.x_data, y=self.__data.y_data)
+        #
+        # self.__rs_plot.plotItem.setData(x=self.__data.x_data, y=self.__data.y_data)
+
+    # def update_plot(self):
+    #     """
+    #     Set new __data for pyQtGraph: __curve and __curve1 (in case three rows of __data),
+    #     for every frame of new frame.
+    #     :return: self
+    #     """
+    #     # print type(self.__data.get_data())
+    #     try:
+    #         t, x, y = self.__dev.get_data()
+    #         self.__curve.setData(x=t, y=x, pen='r', symbol='o', symbolPen='r')
+    #         # assert isinstance(self.__curve1.setData, object)
+    #         self.__curve1.setData(x=t, y=y, pen='g', symbol='s', symbolPen='g')
+    #     except ValueError:
+    #         x, y = self.__dev.get_data()
+    #         self.__curve.setData(x=x, y=y, pen='g')
 
     def file_quit(self):
 

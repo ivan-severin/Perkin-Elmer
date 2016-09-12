@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from PyQt4 import QtCore
+import numpy as np
 import sys
 import glob
 import serial
@@ -23,14 +24,17 @@ class SerialComm(QtCore.QThread):
         self.timeout = port_timeout
         self.ser = None
 
-    def run(self):
+    def run(self, ):
         """
-
+        Starts Thread which reads data from serial port in and emit :signal:
+        of buff array with b_size
+        :param: buff ... ;
+        :param: b_size - ...;
         """
         while self.__conn_state:
             try:
                 x, y = self.load_data()
-                self.emit(QtCore.SIGNAL('run_signal(float, float)'), x, y)
+                self.emit(QtCore.SIGNAL('run_signal(float,float)'), x, y)
             except ValueError:
                 pass
 
@@ -61,10 +65,11 @@ class SerialComm(QtCore.QThread):
 
 
         """
-        if self.__conn_state:
-            self.__conn_state = False
+
+        self.__conn_state = False
         self.ser.close()
         print("Successfully disconnected to port %r." % self.port)
+
     @property
     def is_connected(self):
         """
@@ -93,8 +98,9 @@ class SerialComm(QtCore.QThread):
         #     print('No Arduino')
         except ValueError:
             line = self.ser.readline()
-            line.translate(None, '^[1-9],.')
+            print(line)
             print(ValueError)
+            pass
         return data
 
     def send_data(self, command):
