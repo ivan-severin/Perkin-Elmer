@@ -12,6 +12,7 @@ class Data:
 
         self.x_data = []
         self.y_data = []
-        self.t_data = []
 
-        # data = x_data, y_data
+    def export_txt(self, name=None):
+        pass
+

@@ -48,16 +48,22 @@ class ApplicationWindow(QtGui.QMainWindow):
         # Add buttons
         self.__btn_start_stop = QtGui.QPushButton('Start')
         self.__btn_clear = QtGui.QPushButton('Clear')
-        # self.__btn_clear.setDisabled(True)
+        self.__btn_add = QtGui.QPushButton('Add plot')
+        self.__btn_clear.setDisabled(True)
 
+        # Add Combo box
+        self.__cb = QtGui.QComboBox()
         # Create & Define plot from PyQtgraph
-        self.__main_plot = pg.PlotWidget(title="Main plow Window")
-        self.__rs_plot = pg.PlotWidget(title="Region Selection Window")
+        self.__main_plot = pg.PlotWidget()
+        self.__rs_plot = pg.PlotWidget()
+
         self.curve = self.__main_plot.plot()
         self.curve1 = self.__rs_plot.plot()
 
-        # Set X Range for long plot
+        # Set X Range
         self.__rs_plot.setXRange(0.0, 4000)
+        self.__main_plot.setXRange(0.0, 200)
+        self.__main_plot.setYRange(0.0, 1024)
 
         # Add long plot of region selection
         self.lr = pg.LinearRegionItem([0, 200])
@@ -69,8 +75,8 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.set_plot_conf(self.__rs_plot)
 
         # Defining cross hair
-        self.v_line = pg.InfiniteLine(angle=90, movable=False)
-        self.h_line = pg.InfiniteLine(angle=0, movable=False)
+        self.v_line = pg.InfiniteLine(angle=90, pos=-1000, movable=False)
+        self.h_line = pg.InfiniteLine(angle=0, pos=-1000, movable=False)
 
         # Defining the label for numeric value of every dot in spectrum
         self.xy_label = pg.LabelItem(justify='right', text='')
@@ -80,24 +86,30 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.__main_plot.addItem(self.h_line)
         self.__main_plot.addItem(self.xy_label)
 
-        # Defining ViewBox func (for short writing)
-        self.vb = self.__main_plot.plotItem.vb
-
         # Create instance of some data, which we should plot
         self.__dev = SerialComm()
-        self.__data = Data()
+        self.__data = [Data()]
+
+        self.index = self.__cb.currentIndex()
+        self.__cb.addItem('Default plot')
+        self.__cb.setEditable(True)
 
         self.timer = QtCore.QTimer()
 
         # Add some objects on Grid Layout (x position, y position, eat x rows, eat y columns )
         __layout.addWidget(self.__btn_start_stop, 2, 0, 1, 2)
-        __layout.addWidget(self.__btn_clear, 1, 0, 1, 2)
-        __layout.addWidget(self.__main_plot, 1, 4, )  # __plot goes on right side, spanning 11 rows
-        __layout.addWidget(self.__rs_plot, 2, 4)  # __plot goes on right side, spanning 11 rows
+        __layout.addWidget(self.__btn_clear, 3, 0)
+        __layout.addWidget(self.__btn_add, 3, 1)
+        __layout.addWidget(self.__cb, 1, 0, 1, 2)
+        __layout.addWidget(self.__rs_plot, 1, 4, 10, 1)  # __plot goes on right side, spanning 11 rows
+        __layout.addWidget(self.__main_plot, 11, 4, 2, 1)  # __plot goes on right side, spanning 11 rows
 
         # Define signal&slots for buttons and Data instance
-        self.connect(self.__btn_start_stop, QtCore.SIGNAL('clicked()'), self.on_clicked)
-        self.connect(self.__btn_clear, QtCore.SIGNAL('clicked()'), self.clear_screen)
+        self.connect(self.__btn_start_stop, QtCore.SIGNAL('clicked()'), self.clicked_start_stop)
+        self.connect(self.__btn_clear, QtCore.SIGNAL('clicked()'), self.clicked_clear_data)
+        self.connect(self.__btn_add, QtCore.SIGNAL('clicked()'), self.clicked_add_data)
+        self.connect(self.__cb, QtCore.SIGNAL('currentIndexChanged()'), self.change_current_plot)
+        # self.__cb.currentIndexChanged(self.change_current_plot)
 
         self.connect(self.__dev, QtCore.SIGNAL('started()'), self.on_started)
         self.connect(self.__dev, QtCore.SIGNAL('finished()'), self.on_finished)
@@ -110,38 +122,51 @@ class ApplicationWindow(QtGui.QMainWindow):
         # Signal& slot connection
         self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.re_plot)
 
-        # proxy = pg.SignalProxy(self.__main_plot.scene().sigMouseMoved, rateLimit=60, slot=self.mouse_moved)
-
         # Making signals for resizing __main_plot when region changed
-        self.lr.sigRegionChanged.connect(
+        self.lr.sigRegionChanged.connect(cx4
+                                         |AXWS2QEDP
             lambda: self.__main_plot.setXRange(padding=0, *self.lr.getRegion()))
 
         self.__rs_plot.sigXRangeChanged.connect(
             lambda: self.lr.setRegion(self.__main_plot.plotItem.getViewBox().viewRange()[0]))
+
+        self.__main_plot.plotItem.sigXRangeChanged.connect(
+            lambda: self.lr.setRegion(self.__main_plot.plotItem.getViewBox().viewRange()[0])
+        )
 
         self.__main_plot.scene().sigMouseMoved.connect(self.mouse_moved)
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
 
     def mouse_moved(self, evt):
+        """
+        Actions for performing changing cross hair lines from mouse moving
+        :param evt: type: QPointF. Coordinates of Mouse on Plot.
+        """
+
+        # performing Moving Slot
         if self.__main_plot.plotItem.sceneBoundingRect().contains(evt):
-            mouse_point = self.vb.mapSceneToView(evt)
+            mouse_point = self.__main_plot.plotItem.vb.mapSceneToView(evt)
             index = int(mouse_point.x())
-            if 0 < index < len(self.__data.x_data):
+            if 0 < index < len(self.__data[self.index].x_data):
                 self.xy_label.setText(
                     "<span style='font-size: 12pt'>x=%0.1f</span>,   "
                     "<span style='color: red'>y1=%0.1f</span>"
-                    % (mouse_point.x(), self.__data.y_data[index]))
+                    % (mouse_point.x(), self.__data[self.index].y_data[index]))
                 self.v_line.setPos(mouse_point.x())
-                self.h_line.setPos(self.__data.y_data[index])
+                self.h_line.setPos(self.__data[self.index].y_data[index])
 
     def on_change(self, a, b):
-        self.__data.x_data.append(a)
-        self.__data.y_data.append(b)
+        index = self.__cb.currentIndex()
+        self.__data[index].x_data.append(a)
+        self.__data[index].y_data.append(b)
         # self.__curve.setData(self.__data.x_data, self.__data.y_data, _callSync='off')
 
-    def on_clicked(self):
-        # self.__btn_start.setDisabled(True)
+    def clicked_start_stop(self):
+        index = self.__cb.currentIndex()
+        if len(self.__data[index].x_data) > 1:
+            self.__btn_clear.setDisabled(False)
+
         if not self.__dev.is_connected:
             self.__btn_start_stop.setText("Stop")
             self.__dev.connect()
@@ -154,16 +179,29 @@ class ApplicationWindow(QtGui.QMainWindow):
     def on_started(self):
         self.statusBar().showMessage("Connected and Started!", 2000)
 
-        self.timer.start(1000)
+        self.timer.start(100)
         print ("Timer started")
 
     def on_finished(self):
         self.statusBar().showMessage("Finished!", 2000)
         self.timer.stop()
 
-    def clear_screen(self):
-        self.__data.x_data = []
-        self.__data.y_data = []
+    def clicked_clear_data(self):
+        self.__data.pop()
+
+    def clicked_add_data(self):
+        name, ok = QtGui.QInputDialog.getText(self, "QInputDialog.getText()", "Plot name:", QtGui.QLineEdit.Normal)
+
+        if ok:
+            # name.setComboBoxEditable()
+            self.__data.append(Data())
+        # print name.getItem()
+            self.__cb.addItem(name)
+
+    def change_current_plot(self):
+        x = self.__data[self.index].x_data
+        y = self.__data[self.index].y_data
+        self.curve1.setData(x, y, pen=(0, 0, 255))
 
     @staticmethod
     def set_plot_conf(obj):
@@ -184,8 +222,15 @@ class ApplicationWindow(QtGui.QMainWindow):
 
     def re_plot(self):
         print('tick')
-        self.curve.setData(self.__data.x_data, self.__data.y_data)
-        self.curve1.setData(self.__data.x_data, self.__data.y_data)
+
+        # self.curves_main[self.index].setData(self.__data.x_data, self.__data.y_data)
+        # self.curves_rs[self.__cb.currentIndex()].setData(self.__data.x_data, self.__data.y_data)
+
+        # index = [self.__cb.currentIndex()]        #
+        self.curve.setData(self.__data[self.index].x_data, self.__data[self.index].y_data)
+        self.curve1.setData(self.__data[self.index].x_data, self.__data[self.index].y_data)
+
+        # self.__main_plot.plotItem.addDataItem()
         # self.__main_plot.plotItem.setData(x=self.__data.x_data, y=self.__data.y_data)
         #
         # self.__rs_plot.plotItem.setData(x=self.__data.x_data, y=self.__data.y_data)

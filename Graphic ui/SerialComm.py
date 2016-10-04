@@ -5,31 +5,29 @@ import numpy as np
 import sys
 import glob
 import serial
+# import SerialSimulation as serial
 
 
 class SerialComm(QtCore.QThread):
-    def __init__(self, port_adr='/dev/ttyUSB0', port_baud=38400, port_conn_state=0, port_timeout=0.1):
+    def __init__(self, port='/dev/ttyUSB0', baud=38400,  timeout=0.1):
         """
         This class provide simple interface of communication with Serial port for other classes
-        :param port_adr: The COM port to open. Must be recognized by the system.
-        :param port_baud: Bit rate of Asynchronous Serial port
-        :param port_conn_state: Connection State
-        :param port_timeout: Period of waiting for calling to port
+        :param port: The COM port to open. Must be recognized by the system.
+        :param baud: Bit rate of Asynchronous Serial port
+        :param timeout: Period of waiting for calling to port
         """
         QtCore.QThread.__init__(self)
 
-        self.port = port_adr
-        self.baud = port_baud
-        self.__conn_state = port_conn_state
-        self.timeout = port_timeout
+        self.port = port
+        self.baud = baud
+        self.__conn_state = False
+        self.timeout = timeout
         self.ser = None
 
-    def run(self, ):
+    def run(self):
         """
         Starts Thread which reads data from serial port in and emit :signal:
         of buff array with b_size
-        :param: buff ... ;
-        :param: b_size - ...;
         """
         while self.__conn_state:
             try:
@@ -61,9 +59,7 @@ class SerialComm(QtCore.QThread):
 
     def disconnect(self, **kwargs):
         """
-
-
-
+        Close serial connection
         """
 
         self.__conn_state = False
@@ -94,10 +90,10 @@ class SerialComm(QtCore.QThread):
         try:
             line = self.ser.readline()
             data = [float(val) for val in line.split()]
-        # except (OSError, serial.SerialException, AttributeError):
-        #     print('No Arduino')
-        except ValueError:
-            line = self.ser.readline()
+
+        except (ValueError, TypeError, OSError, serial.SerialException):
+            print('No Arduino')
+
             print(line)
             print(ValueError)
             pass
@@ -105,9 +101,8 @@ class SerialComm(QtCore.QThread):
 
     def send_data(self, command):
         """
-
-        :param command:
-        :return:
+        Sends data to serial port
+        :param command: byte array of commands
         """
         try:
             self.ser.write(command)
