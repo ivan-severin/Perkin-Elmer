@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="09c3c58f-a8ad-4b4d-b77c-40129930475f" name="Default" comment="Added cross hair and time depended plotting">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/spectres/test_spectr.csv" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/spectres/test_spectr11.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/graphic_ui/ApplicationWindow.py" afterPath="$PROJECT_DIR$/graphic_ui/ApplicationWindow.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/dictionaries/severin.xml" />
     </list>
     <ignored path="Test_analog_transf/test_spectr.csv" />
     <ignored path="Test_analog_transf/test_spectr11.csv" />
@@ -651,7 +648,14 @@
       <option name="project" value="LOCAL" />
       <updated>1477574082072</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="Added cross hair and time depended plotting">
+      <created>1477574440114</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1477574440114</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TodoView" selected-index="3">
@@ -714,9 +718,9 @@
     <MESSAGE value="Rewrite system of cleases / Started implementation of Multithreading system" />
     <MESSAGE value="Start\stop button has written" />
     <MESSAGE value="Added region selection plot" />
-    <MESSAGE value="Added cross hair and time depended plotting" />
     <MESSAGE value="Normal arduino simulation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Normal arduino simulation" />
+    <MESSAGE value="Added cross hair and time depended plotting" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added cross hair and time depended plotting" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
