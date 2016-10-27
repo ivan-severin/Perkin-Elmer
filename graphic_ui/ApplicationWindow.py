@@ -8,7 +8,7 @@ __data from spectrometer Perkin Elmer 599b.
 Used modules: PyQt4,  pyqtgraph, os, sys, __data (Serial)
 """
 
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
 import pyqtgraph as pg
 
 from Data import *
@@ -123,8 +123,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.re_plot)
 
         # Making signals for resizing __main_plot when region changed
-        self.lr.sigRegionChanged.connect(cx4
-                                         |AXWS2QEDP
+        self.lr.sigRegionChanged.connect(
             lambda: self.__main_plot.setXRange(padding=0, *self.lr.getRegion()))
 
         self.__rs_plot.sigXRangeChanged.connect(
@@ -163,6 +162,10 @@ class ApplicationWindow(QtGui.QMainWindow):
         # self.__curve.setData(self.__data.x_data, self.__data.y_data, _callSync='off')
 
     def clicked_start_stop(self):
+        """
+        Slot Function for Start/Stop button
+        :return:
+        """
         index = self.__cb.currentIndex()
         if len(self.__data[index].x_data) > 1:
             self.__btn_clear.setDisabled(False)
@@ -177,6 +180,10 @@ class ApplicationWindow(QtGui.QMainWindow):
             self.timer.stop()
 
     def on_started(self):
+        """
+        Slot Function for starting Thread.
+        :return:
+        """
         self.statusBar().showMessage("Connected and Started!", 2000)
 
         self.timer.start(100)
@@ -221,37 +228,23 @@ class ApplicationWindow(QtGui.QMainWindow):
             pass
 
     def re_plot(self):
-        print('tick')
+        """
 
-        # self.curves_main[self.index].setData(self.__data.x_data, self.__data.y_data)
-        # self.curves_rs[self.__cb.currentIndex()].setData(self.__data.x_data, self.__data.y_data)
-
-        # index = [self.__cb.currentIndex()]        #
-        self.curve.setData(self.__data[self.index].x_data, self.__data[self.index].y_data)
-        self.curve1.setData(self.__data[self.index].x_data, self.__data[self.index].y_data)
-
-        # self.__main_plot.plotItem.addDataItem()
-        # self.__main_plot.plotItem.setData(x=self.__data.x_data, y=self.__data.y_data)
-        #
-        # self.__rs_plot.plotItem.setData(x=self.__data.x_data, y=self.__data.y_data)
-
-    # def update_plot(self):
-    #     """
-    #     Set new __data for pyQtGraph: __curve and __curve1 (in case three rows of __data),
-    #     for every frame of new frame.
-    #     :return: self
-    #     """
-    #     # print type(self.__data.get_data())
-    #     try:
-    #         t, x, y = self.__dev.get_data()
-    #         self.__curve.setData(x=t, y=x, pen='r', symbol='o', symbolPen='r')
-    #         # assert isinstance(self.__curve1.setData, object)
-    #         self.__curve1.setData(x=t, y=y, pen='g', symbol='s', symbolPen='g')
-    #     except ValueError:
-    #         x, y = self.__dev.get_data()
-    #         self.__curve.setData(x=x, y=y, pen='g')
+        :return:
+        """
+        try:
+            self.curve.setData(self.__data[self.index].x_data, self.__data[self.index].y_data)
+            self.curve1.setData(self.__data[self.index].x_data, self.__data[self.index].y_data)
+        except Exception as e:
+            print(e)
+            return 1, e
+        return 0
 
     def file_quit(self):
+        """
+
+        :return:
+        """
 
         if self.__dev.isRunning():
             self.__dev.disconnect()

@@ -5,7 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/Animation Script/Graphic ui" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Test_analog_transf" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 2.7.10 (/usr/bin/python2.7)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 2.7.9 virtualenv at ~/PycharmProjects/Perkin-Elmer/Enviroment" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">

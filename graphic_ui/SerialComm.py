@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from PyQt4 import QtCore
-import numpy as np
+# import numpy as np
 import sys
 import glob
-import serial
-# import SerialSimulation as serial
+# import serial
+import SerialSimulation as serial
 
 
 class SerialComm(QtCore.QThread):
@@ -34,7 +34,7 @@ class SerialComm(QtCore.QThread):
                 x, y = self.load_data()
                 self.emit(QtCore.SIGNAL('run_signal(float,float)'), x, y)
             except ValueError:
-                pass
+                print ValueError
 
     def connect(self, **kwargs):
         # type: () -> object
@@ -93,10 +93,9 @@ class SerialComm(QtCore.QThread):
 
         except (ValueError, TypeError, OSError, serial.SerialException):
             print('No Arduino')
-
             print(line)
             print(ValueError)
-            pass
+
         return data
 
     def send_data(self, command):
