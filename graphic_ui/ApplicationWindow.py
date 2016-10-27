@@ -53,6 +53,7 @@ class ApplicationWindow(QtGui.QMainWindow):
 
         # Add Combo box
         self.__cb = QtGui.QComboBox()
+
         # Create & Define plot from PyQtgraph
         self.__main_plot = pg.PlotWidget()
         self.__rs_plot = pg.PlotWidget()
